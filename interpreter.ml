@@ -1,3 +1,5 @@
+open Printf
+
 type id = string
 
 type binop  = Plus | Minus | Times | Div
@@ -28,7 +30,10 @@ let rec interpExps exps env =
 
  and interpExp exp env =
   match exp with
-  | IdExp id -> Env.find id env
+  | IdExp id -> (try Env.find id env with
+                 | Not_found -> printf "unbound identifier: %s\n" id;
+                   exit (-1)
+                )
   | NumExp n -> n
   | OpExp (e1, op, e2) -> (match op with
                            | Plus -> (interpExp e1 env) + (interpExp e2 env)
@@ -39,4 +44,4 @@ let rec interpExps exps env =
   | IfExp (c,e1,e2) -> (match (interpExp c env) with 
                         | 1 -> interpExp e1 env 
                         | 0 -> interpExp e2 env)
-  | PrintExp e -> let x = (interpExp e env) in print_int x; x
+  | PrintExp e -> let x = (interpExp e env) in print_int x; print_newline (); x
