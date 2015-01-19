@@ -20,7 +20,7 @@ let main () =
   begin match parse_with_error lexbuf with
   | None -> ()
   | Some exps ->
-    let x = Interpreter.interpExps exps Interpreter.empty in
+    let x = Interpreter.interpExps exps Interpreter.empty Interpreter.fempty in
     printf "returned: %d\n" x
   end
 

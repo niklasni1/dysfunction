@@ -1,5 +1,2 @@
-let x = 4 in
-let y = (if 1 then 1 else 2) in
-print (y + x)
-
-print 1
+let y = x. {(if (x = 4) then 5 else let x = (print x; x + 1) in call y x)} in
+ call y 0

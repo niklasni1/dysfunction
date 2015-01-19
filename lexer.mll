@@ -26,16 +26,21 @@ rule read =
   | "in" { IN }
   | "if" { IF }
   | "then" { THEN }
+  | "call" { CALL }
   | "print" { PRINT }
   | "else" { ELSE }
   | id { ID (Lexing.lexeme lexbuf) }
   | '(' { OPAREN }
   | ')' { CPAREN }
+  | '{' { OBRACK }
+  | '}' { CBRACK }
   | '+' { PLUS }
   | '-' { MINUS }
   | '/' { DIV }
   | '*' { TIMES }
-  | "=" { EQUALS }
+  | '=' { EQUALS }
+  | ';' { SEMICOLON }
+  | '.' { STOP }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
   | eof { EOF }
 
