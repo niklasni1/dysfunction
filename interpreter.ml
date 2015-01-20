@@ -1,6 +1,14 @@
 open Printf
 
-type id = string
+type id = string 
+
+module Id =
+  struct
+    type t = id
+    let compare = compare
+  end
+
+module Env = Map.Make (Id)
 
 type binop  = Plus | Minus | Times | Div | Equals
 
@@ -15,19 +23,10 @@ type exp =
          | CallExp of id * exp
          | SeqExp of exp * exp
 
-type value = 
-  Integer of int
-  | Boolean of bool
-  | Function of exp * id
-
-
-module Id =
-  struct
-    type t = id
-    let compare = compare
-  end
-
-module Env = Map.Make (Id)
+         and value = 
+           Integer of int
+            | Boolean of bool
+            | Function of exp * id * value Env.t
 
 let empty = Env.empty
 
@@ -62,8 +61,8 @@ let rec interpExps exps env =
   | PrintExp e -> (match (interpExp e env) with 
                   | Integer x -> print_int x; print_newline (); Integer x
                   | Boolean b-> printf "%B\n" b; Boolean b 
-                  | Function (f,b) -> print_string "Function"; print_newline (); Function (f, b))
-  | FunExp (p,body) -> Function(body, p)
+                  | Function (f,b,e) -> print_string "Function"; print_newline (); Function (f,b,e))
+  | FunExp (p,body) -> Function(body,p,env)
   | CallExp (func,binding) -> (match (Env.find func env) with
-                        | Function (f,p) -> interpExp f (Env.add p (interpExp binding env) env))
+                        | Function (f,p,e) -> interpExp f (Env.add p (interpExp binding env) e))
   | SeqExp (e1,e2) -> interpExp e1 env; interpExp e2 env 

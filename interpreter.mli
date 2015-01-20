@@ -1,5 +1,7 @@
 type id = string
 
+module Env : Map.S with type key = id
+
 type binop = Plus | Minus | Times | Div | Equals
 
 and exp =
@@ -13,12 +15,10 @@ and exp =
   | CallExp of id * exp
   | SeqExp of exp * exp
 
-type value = 
+and value = 
   Integer of int 
   | Boolean of bool
-  | Function of exp * id
-
-module Env : Map.S with type key = id
+  | Function of exp * id * value Env.t
 
 val empty : value Env.t
 
