@@ -52,19 +52,21 @@ expr:
     { I.PrintExp e }
   | LET; i = ID; EQUALS; e1 = expr; IN; e2 = expr;
     { I.LetExp (i, e1, e2) }
-  | LET; i = ID; EQUALS; p = ID; STOP; OBRACK; e1 = expr; CBRACK; IN; e2 = expr;
-    { I.FunExp (i, p, e1, e2) }
-  | CALL; i = ID; b = expr;
+  | p = ID; STOP; e1 = expr;
+    { I.FunExp (p, e1) }
+  | i = ID; OPAREN; b = expr; CPAREN;
     { I.CallExp (i, b) }
-  | OPAREN; IF; c = expr; THEN; e1 = expr; ELSE; e2 = expr; CPAREN
+  | IF; c = expr; THEN; e1 = expr; ELSE; e2 = expr;
     { I.IfExp (c,e1,e2) }
-  | OPAREN; e1 = expr; PLUS; e2 = expr; CPAREN
+  | e1 = expr; PLUS; e2 = expr;
     { I.OpExp (e1, I.Plus, e2) }
-  | OPAREN; e1 = expr; EQUALS; e2 = expr; CPAREN
+  | e1 = expr; EQUALS; e2 = expr;
     { I.OpExp (e1, I.Equals, e2) }
-  | OPAREN; e1 = expr; MINUS; e2 = expr; CPAREN
+  | e1 = expr; MINUS; e2 = expr;
     { I.OpExp (e1, I.Minus, e2) }
-  | OPAREN; e1 = expr; TIMES; e2 = expr; CPAREN
+  | e1 = expr; TIMES; e2 = expr;
     { I.OpExp (e1, I.Times, e2) }
-  | OPAREN; e1 = expr; DIV; e2 = expr; CPAREN
+  | e1 = expr; DIV; e2 = expr;
     { I.OpExp (e1, I.Div, e2) }; 
+  | OPAREN; e1 = expr; CPAREN;
+    { e1 }

@@ -9,15 +9,17 @@ and exp =
   | LetExp of id * exp * exp 
   | IfExp of exp * exp * exp 
   | PrintExp of exp
-  | FunExp of id * id * exp * exp
+  | FunExp of id * exp
   | CallExp of id * exp
   | SeqExp of exp * exp
 
-type func = Function of exp * id
+type value = 
+  Integer of int 
+  | Boolean of bool
+  | Function of exp * id
 
 module Env : Map.S with type key = id
 
-val empty : int Env.t
-val fempty : func Env.t
+val empty : value Env.t
 
-val interpExps : exp list -> int Env.t -> func Env.t -> int
+val interpExps : exp list -> value Env.t -> value

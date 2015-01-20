@@ -1,3 +1,1 @@
-let x = 1 in 
- let y = (if 1 then 1 else 2) in
-  print (x + y)
+let plus = (a. (b. a + b)) in let adder = plus(3) in adder(2)

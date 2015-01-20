@@ -11,11 +11,14 @@ type exp =
          | LetExp of id * exp * exp
          | IfExp of exp * exp * exp
          | PrintExp of exp
-         | FunExp of id * id * exp * exp
+         | FunExp of id * exp
          | CallExp of id * exp
          | SeqExp of exp * exp
 
-type func = Function of exp * id
+type value = 
+  Integer of int
+  | Boolean of bool
+  | Function of exp * id
 
 
 module Id =
@@ -25,37 +28,42 @@ module Id =
   end
 
 module Env = Map.Make (Id)
-module Fenv = Map.Make (Id)
 
 let empty = Env.empty
-let fempty = Fenv.empty
 
-let rec interpExps exps venv fenv = 
+let rec interpExps exps env = 
   match exps with
-  | e::[] -> interpExp e venv fenv
-  | e::es -> interpExp e venv fenv; interpExps es venv fenv
+  | e::[] -> interpExp e env 
+  | e::es -> interpExp e env; interpExps es env
 
- and interpExp exp venv fenv =
+ and interpExp exp env =
   match exp with
-  | IdExp id -> (try Env.find id venv with
+  | IdExp id -> (try Env.find id env with
                  | Not_found -> printf "unbound identifier: %s\n" id;
                    exit (-1)
                 )
-  | NumExp n -> n
-  | OpExp (e1, op, e2) -> (match op with
-                           | Plus -> (interpExp e1 venv fenv) + (interpExp e2 venv fenv)
-                           | Minus -> (interpExp e1 venv fenv) - (interpExp e2 venv fenv)
-                           | Times -> (interpExp e1 venv fenv) * (interpExp e2 venv fenv)
-                           | Div -> (interpExp e1 venv fenv) / (interpExp e2 venv fenv)
-                           | Equals -> (let a = interpExp e1 venv fenv in
-                                         let b = interpExp e2 venv fenv in
-                                          if a = b then 1 else 0))
-  | LetExp (id,value,body) -> interpExp body (Env.add id (interpExp value venv fenv) venv) fenv
-  | IfExp (c,e1,e2) -> (match (interpExp c venv fenv) with 
-                        | 1 -> interpExp e1 venv fenv 
-                        | 0 -> interpExp e2 venv fenv)
-  | PrintExp e -> let x = (interpExp e venv fenv) in print_int x; print_newline (); x
-  | FunExp (id,p,e,body) -> interpExp body venv (Env.add id (Function(e, p)) fenv)
-  | CallExp (func,binding) -> (match (Fenv.find func fenv) with
-                        | Function (f,p) -> interpExp f (Env.add p (interpExp binding venv fenv) venv) fenv)
-  | SeqExp (e1,e2) -> interpExp e1 venv fenv; interpExp e2 venv fenv 
+  | NumExp n -> Integer n
+  | OpExp (e1, op, e2) -> let aV = (interpExp e1 env) in 
+      let bV = (interpExp e2 env) in (match (aV,bV) with 
+      | (Integer a, Integer b) -> (match op with 
+            | Plus -> Integer (a + b)
+            | Minus -> Integer (a - b)
+            | Times -> Integer (a * b)
+            | Div -> Integer (a / b)
+            | Equals -> if a = b then Boolean true else Boolean false)
+      | _ -> exit(-1))
+
+  | LetExp (id,v,body) -> interpExp body (Env.add id (interpExp v env) env)
+  | IfExp (c,e1,e2) -> (match (interpExp c env) with 
+                        | Boolean true -> interpExp e1 env 
+                        | Boolean false -> interpExp e2 env
+                        | Integer 0 -> interpExp e2 env
+                        | Integer _ -> interpExp e1 env)
+  | PrintExp e -> (match (interpExp e env) with 
+                  | Integer x -> print_int x; print_newline (); Integer x
+                  | Boolean b-> printf "%B\n" b; Boolean b 
+                  | Function (f,b) -> print_string "Function"; print_newline (); Function (f, b))
+  | FunExp (p,body) -> Function(body, p)
+  | CallExp (func,binding) -> (match (Env.find func env) with
+                        | Function (f,p) -> interpExp f (Env.add p (interpExp binding env) env))
+  | SeqExp (e1,e2) -> interpExp e1 env; interpExp e2 env 

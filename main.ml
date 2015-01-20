@@ -20,8 +20,11 @@ let main () =
   begin match parse_with_error lexbuf with
   | None -> ()
   | Some exps ->
-    let x = Interpreter.interpExps exps Interpreter.empty Interpreter.fempty in
-    printf "returned: %d\n" x
+    let x = Interpreter.interpExps exps Interpreter.empty in
+      (match x with 
+        | Integer x -> printf "returned %d\n" x
+        | Boolean b-> printf "returned %B\n" b
+        | Function _ -> printf "returned a function\n")
   end
 
 let _ =
